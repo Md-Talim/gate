@@ -1,5 +1,6 @@
 package io.github.mdtalim.gate.controller;
 
+import io.github.mdtalim.gate.dtos.LoginRequest;
 import io.github.mdtalim.gate.dtos.RegisterRequest;
 import io.github.mdtalim.gate.models.User;
 import io.github.mdtalim.gate.service.UserService;
@@ -16,6 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private UserService userService;
+
+    @PostMapping("/public/login")
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
+        return ResponseEntity.ok(userService.loginUser(loginRequest));
+    }
 
     @PostMapping("/public/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
