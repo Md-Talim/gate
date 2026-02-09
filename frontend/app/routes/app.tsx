@@ -53,7 +53,6 @@ export default function App() {
   };
 
   const copyToClipboard = (url: UrlMapping) => {
-    // TODO: Implement url shortening route in frontend
     navigator.clipboard.writeText(
       `${window.location.origin}/s/${url.shortUrl}`,
     );
