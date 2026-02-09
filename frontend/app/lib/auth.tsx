@@ -10,6 +10,7 @@ import { apiFetch } from "~/lib/api";
 interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
+  isAuthenticating: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (
     username: string,
@@ -23,10 +24,12 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
+  const [isAuthenticating, setIsLoading] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("token");
     if (stored) setToken(stored);
+    setIsLoading(false);
   }, []);
 
   const login = async (username: string, password: string) => {
@@ -57,7 +60,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ token, isAuthenticated: !!token, login, register, logout }}
+      value={{
+        token,
+        isAuthenticated: !!token,
+        isAuthenticating: isAuthenticating,
+        login,
+        register,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

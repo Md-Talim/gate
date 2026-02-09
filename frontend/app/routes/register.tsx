@@ -3,17 +3,20 @@ import { Link, Navigate, useNavigate } from "react-router";
 import { useAuth } from "~/lib/auth";
 
 export default function Register() {
-  const { isAuthenticated, register } = useAuth();
+  const { isAuthenticated, isAuthenticating, register } = useAuth();
+
+  if (isAuthenticating) return null;
+
+  if (isAuthenticated) {
+    return <Navigate to="/app" replace />;
+  }
+
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  if (isAuthenticated) {
-    return <Navigate to="/app" replace />;
-  }
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();

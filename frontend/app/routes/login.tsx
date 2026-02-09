@@ -3,12 +3,14 @@ import { Link, Navigate, useNavigate } from "react-router";
 import { useAuth } from "~/lib/auth";
 
 export default function Login() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, isAuthenticating, login } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  if (isAuthenticating) return null;
 
   if (isAuthenticated) {
     return <Navigate to="/app" replace />;
