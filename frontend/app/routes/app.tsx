@@ -1,4 +1,5 @@
 import { type SubmitEvent, useEffect, useState } from "react";
+import { Link } from "react-router";
 import { apiFetch } from "~/lib/api";
 import { useAuth } from "~/lib/auth";
 
@@ -17,6 +18,7 @@ export default function App() {
   const [newUrl, setNewUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState<number | null>(null);
 
   const fetchUrls = async () => {
     try {
@@ -50,21 +52,33 @@ export default function App() {
     }
   };
 
+  const copyToClipboard = (url: UrlMapping) => {
+    // TODO: Implement url shortening route in frontend
+    navigator.clipboard.writeText(
+      `${window.location.origin}/s/${url.shortUrl}`,
+    );
+    setCopied(url.id);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-neutral-200">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <h1 className="text-lg font-bold text-neutral-900">Gate</h1>
+    <div className="min-h-screen bg-white text-neutral-900 font-sans">
+      {/* Header */}
+      <header className="border-b border-neutral-100">
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
+          <Link to="/" className="text-lg font-bold tracking-tight">
+            Gate
+          </Link>
           <button
             onClick={logout}
-            className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+            className="text-xs text-neutral-400 hover:text-neutral-900 transition-colors"
           >
             Sign out
           </button>
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl px-6 py-8">
+      <div className="mx-auto max-w-2xl px-6 py-10">
         {/* Shorten form */}
         <form onSubmit={handleShorten} className="flex gap-2">
           <input
@@ -73,55 +87,69 @@ export default function App() {
             placeholder="Paste a long URL..."
             value={newUrl}
             onChange={(e) => setNewUrl(e.target.value)}
-            className="flex-1 rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none"
+            className="flex-1 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none transition-colors"
           />
           <button
             type="submit"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
+            className="rounded-lg bg-neutral-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
           >
             Shorten
           </button>
         </form>
 
-        {error && (
-          <div className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-        {/* URL list */}
-        <div className="mt-8">
+        {/* Links section */}
+        <div className="mt-10">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-neutral-400">
             Your Links
           </h2>
 
           {loading ? (
-            <p className="mt-4 text-sm text-neutral-500">Loading...</p>
+            <p className="mt-6 text-sm text-neutral-400">Loading...</p>
           ) : urls.length === 0 ? (
-            <p className="mt-4 text-sm text-neutral-500">
-              No shortened URLs yet. Create your first one above.
-            </p>
+            <div className="mt-16 text-center">
+              <p className="text-lg font-medium text-neutral-900">
+                No links yet
+              </p>
+              <p className="mt-2 text-sm text-neutral-500">
+                Shorten your first URL to get started
+              </p>
+            </div>
           ) : (
-            <ul className="mt-4 divide-y divide-neutral-100">
+            <ul className="mt-6 space-y-3">
               {urls.map((url) => (
-                <li key={url.id} className="py-3">
-                  <div className="flex items-center justify-between">
+                <li
+                  key={url.id}
+                  className="rounded-lg border border-neutral-100 bg-neutral-50/50 px-5 py-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
-                      <a
-                        href={`http://localhost:8080/${url.shortUrl}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-neutral-900 hover:underline"
-                      >
-                        /{url.shortUrl}
-                      </a>
-                      <p className="mt-0.5 truncate text-xs text-neutral-500">
-                        {url.originalUrl}
+                      <p className="text-sm font-medium text-neutral-900">
+                        gate.app/{url.shortUrl}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-neutral-400">
+                        → {url.originalUrl}
                       </p>
                     </div>
-                    <span className="ml-4 text-xs text-neutral-400">
+                    <span className="shrink-0 text-xs text-neutral-400">
                       {url.clickCount} click{url.clickCount !== 1 && "s"}
                     </span>
+                  </div>
+
+                  <div className="mt-3 flex gap-3">
+                    <Link
+                      to={`/analytics/${url.shortUrl}`}
+                      className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+                    >
+                      View Analytics
+                    </Link>
+                    <button
+                      onClick={() => copyToClipboard(url)}
+                      className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+                    >
+                      {copied === url.id ? "Copied!" : "Copy"}
+                    </button>
                   </div>
                 </li>
               ))}
