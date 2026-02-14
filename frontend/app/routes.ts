@@ -10,5 +10,8 @@ export default [
   route("register", "routes/register.tsx"),
   route("login", "routes/login.tsx"),
   route("s/:shortUrl", "routes/redirect.tsx"),
-  layout("routes/auth-layout.tsx", [route("app", "routes/app.tsx")]),
+  layout("routes/auth-layout.tsx", [
+    route("app", "routes/app.tsx"),
+    route("analytics/:shortUrl", "routes/analytics.tsx"),
+  ]),
 ] satisfies RouteConfig;

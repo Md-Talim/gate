@@ -1,9 +1,12 @@
 const API_BASE = import.meta.env.VITE_BACKEND_API_URL;
 
+const PUBLIC_PATHS = ["/api/auth/public/"];
+
 export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p));
   const token = localStorage.getItem("token");
 
   const headers: Record<string, string> = {
@@ -11,7 +14,7 @@ export async function apiFetch<T>(
     ...((options.headers as Record<string, string>) || {}),
   };
 
-  if (token) {
+  if (token && !isPublic) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
