@@ -158,7 +158,7 @@ export default function Analytics() {
         {urlInfo && (
           <div>
             <p className="text-sm font-medium text-neutral-900">
-              gate.app/{urlInfo.shortUrl}
+              {window.location.origin}/{urlInfo.shortUrl}
             </p>
             <p className="mt-1 truncate text-xs text-neutral-400">
               → {urlInfo.originalUrl}
