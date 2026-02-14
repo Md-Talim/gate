@@ -161,7 +161,7 @@ export default function Analytics() {
               {window.location.origin}/{urlInfo.shortUrl}
             </p>
             <p className="mt-1 truncate text-xs text-neutral-400">
-              → {urlInfo.originalUrl}
+              {urlInfo.originalUrl}
             </p>
           </div>
         )}

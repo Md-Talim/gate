@@ -128,7 +128,7 @@ export default function App() {
                         {window.location.origin}/{url.shortUrl}
                       </p>
                       <p className="mt-1 truncate text-xs text-neutral-400">
-                        → {url.originalUrl}
+                        {url.originalUrl}
                       </p>
                     </div>
                     <span className="shrink-0 text-xs text-neutral-400">
