@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { useAuth } from "~/lib/auth";
 
@@ -48,7 +48,7 @@ export default function Register() {
           </div>
         )}
 
-        <form onSubmit={(e) => handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label
               htmlFor="username"
