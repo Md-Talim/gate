@@ -11,6 +11,7 @@ import io.github.mdtalim.gate.repository.UrlMappingRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ public class UrlMappingService {
     private UrlMappingRepository urlMappingRepository;
     private ClickEventRepository clickEventRepository;
 
+    @Transactional
     public UrlMappingDTO createShortUrl(String originalUrl, User user) {
         String shortUrl = generateShortUrl();
 
@@ -38,6 +40,7 @@ public class UrlMappingService {
         return convertToDTO(savedUrlMapping);
     }
 
+    @Transactional(readOnly = true)
     public List<UrlMappingDTO> getUrlsByUser(User user) {
         return urlMappingRepository.findByUser(user)
                 .stream()
@@ -45,6 +48,7 @@ public class UrlMappingService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ClickEventDTO> getClickEventsByDate(String shortUrl, LocalDateTime start, LocalDateTime end, User user) {
         UrlMapping urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
         if (urlMapping == null) {
@@ -67,6 +71,7 @@ public class UrlMappingService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public Map<LocalDate, Long> getTotalClicksByUserAndDate(User user, LocalDate start, LocalDate end) {
         List<UrlMapping> urlMappings = urlMappingRepository.findByUser(user);
         List<ClickEvent> clickEvents = clickEventRepository.findByUrlMappingInAndClickDateBetween(urlMappings, start.atStartOfDay(), end.plusDays(1).atStartOfDay());
@@ -74,6 +79,7 @@ public class UrlMappingService {
                 .collect(Collectors.groupingBy(click -> click.getClickDate().toLocalDate(), Collectors.counting()));
     }
 
+    @Transactional(readOnly = true)
     public UrlMapping getOriginalUrl(String shortUrl) {
         UrlMapping urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
         if (urlMapping == null) {
@@ -82,6 +88,7 @@ public class UrlMappingService {
         return urlMapping;
     }
 
+    @Transactional
     public void updateClickAnalytics(UrlMapping urlMapping) {
         urlMapping.setClickCount(urlMapping.getClickCount() + 1);
         urlMappingRepository.save(urlMapping);
