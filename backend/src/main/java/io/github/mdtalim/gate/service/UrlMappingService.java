@@ -2,6 +2,7 @@ package io.github.mdtalim.gate.service;
 
 import io.github.mdtalim.gate.dtos.ClickEventDTO;
 import io.github.mdtalim.gate.dtos.UrlMappingDTO;
+import io.github.mdtalim.gate.exception.ResourceNotFoundException;
 import io.github.mdtalim.gate.models.ClickEvent;
 import io.github.mdtalim.gate.models.UrlMapping;
 import io.github.mdtalim.gate.models.User;
@@ -69,7 +70,11 @@ public class UrlMappingService {
     }
 
     public UrlMapping getOriginalUrl(String shortUrl) {
-        return urlMappingRepository.findByShortUrl(shortUrl);
+        UrlMapping urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
+        if (urlMapping == null) {
+            throw new ResourceNotFoundException("Short URL not found: " + shortUrl);
+        }
+        return urlMapping;
     }
 
     public void updateClickAnalytics(UrlMapping urlMapping) {
