@@ -1,11 +1,12 @@
 package io.github.mdtalim.gate.models;
 
-
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "users")
 public class User {
     @Id
