@@ -9,6 +9,7 @@ import io.github.mdtalim.gate.models.User;
 import io.github.mdtalim.gate.repository.ClickEventRepository;
 import io.github.mdtalim.gate.repository.UrlMappingRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -44,10 +45,14 @@ public class UrlMappingService {
                 .toList();
     }
 
-    public List<ClickEventDTO> getClickEventsByDate(String shortUrl, LocalDateTime start, LocalDateTime end) {
+    public List<ClickEventDTO> getClickEventsByDate(String shortUrl, LocalDateTime start, LocalDateTime end, User user) {
         UrlMapping urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
         if (urlMapping == null) {
-            return null;
+            throw new ResourceNotFoundException("Short URL not found: " + shortUrl);
+        }
+
+        if (!urlMapping.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You do not have permission to view analytics for this URL");
         }
 
         return clickEventRepository.findByUrlMappingAndClickDateBetween(urlMapping, start, end).stream()

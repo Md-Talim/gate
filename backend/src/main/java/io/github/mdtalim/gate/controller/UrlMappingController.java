@@ -47,12 +47,15 @@ public class UrlMappingController {
     public ResponseEntity<List<ClickEventDTO>> getUrlAnalytics(
             @PathVariable String shortUrl,
             @RequestParam("startDate") String startDate,
-            @RequestParam("endDate") String endDate
+            @RequestParam("endDate") String endDate,
+            Principal principal
     ) {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         LocalDateTime start = LocalDateTime.parse(startDate, formatter);
         LocalDateTime end = LocalDateTime.parse(endDate, formatter);
-        List<ClickEventDTO> clickEventDTOList = urlMappingService.getClickEventsByDate(shortUrl, start, end);
+        User user = userService.findByUsername(principal.getName());
+
+        List<ClickEventDTO> clickEventDTOList = urlMappingService.getClickEventsByDate(shortUrl, start, end, user);
         return ResponseEntity.ok(clickEventDTOList);
     }
 
