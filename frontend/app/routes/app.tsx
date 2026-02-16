@@ -125,7 +125,7 @@ export default function App() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-neutral-900">
-                        {window.location.origin}/{url.shortUrl}
+                        {window.location.origin}/s/{url.shortUrl}
                       </p>
                       <p className="mt-1 truncate text-xs text-neutral-400">
                         {url.originalUrl}
