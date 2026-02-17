@@ -13,22 +13,28 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class UrlMappingService {
+
+    private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final int SHORT_URL_LENGTH = 8;
+    private static final int MAX_RETRIES = 5;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private UrlMappingRepository urlMappingRepository;
     private ClickEventRepository clickEventRepository;
 
     @Transactional
     public UrlMappingDTO createShortUrl(String originalUrl, User user) {
-        String shortUrl = generateShortUrl();
+        String shortUrl = generateUniqueShortUrl();
 
         UrlMapping urlMapping = new UrlMapping();
         urlMapping.setOriginalUrl(originalUrl);
@@ -99,16 +105,22 @@ public class UrlMappingService {
         clickEventRepository.save(clickEvent);
     }
 
-    private String generateShortUrl() {
-        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        Random random = new Random();
-        StringBuilder shortUrl = new StringBuilder();
-        int size = 8;
-
-        for (int i = 0; i < size; i++) {
-            shortUrl.append(chars.charAt(random.nextInt(chars.length())));
+    private String generateUniqueShortUrl() {
+        for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            String candidate = generateShortUrl();
+            if (!urlMappingRepository.existsByShortUrl(candidate)) {
+                return candidate;
+            }
         }
 
+        throw new RuntimeException("Failed to generate a unique short URL after " + MAX_RETRIES + " attempts");
+    }
+
+    private String generateShortUrl() {
+        StringBuilder shortUrl = new StringBuilder();
+        for (int i = 0; i < SHORT_URL_LENGTH; i++) {
+            shortUrl.append(CHARACTERS.charAt(SECURE_RANDOM.nextInt(CHARACTERS.length())));
+        }
         return shortUrl.toString();
     }
 
