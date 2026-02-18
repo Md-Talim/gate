@@ -9,6 +9,7 @@ import io.github.mdtalim.gate.models.User;
 import io.github.mdtalim.gate.repository.ClickEventRepository;
 import io.github.mdtalim.gate.repository.UrlMappingRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public class UrlMappingService {
 
     private UrlMappingRepository urlMappingRepository;
     private ClickEventRepository clickEventRepository;
+    private UrlCacheService urlCacheService;
 
     @Transactional
     public UrlMappingDTO createShortUrl(String originalUrl, User user) {
@@ -86,16 +88,28 @@ public class UrlMappingService {
     }
 
     @Transactional(readOnly = true)
-    public UrlMapping getOriginalUrl(String shortUrl) {
+    public String resolveOriginalUrl(String shortUrl) {
+        String cachedUrl = urlCacheService.get(shortUrl);
+        if (cachedUrl != null) {
+            return cachedUrl;
+        }
+
         UrlMapping urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
         if (urlMapping == null) {
             throw new ResourceNotFoundException("Short URL not found: " + shortUrl);
         }
-        return urlMapping;
+
+        urlCacheService.put(shortUrl, urlMapping.getOriginalUrl());
+
+        return urlMapping.getOriginalUrl();
     }
 
+    @Async
     @Transactional
-    public void updateClickAnalytics(UrlMapping urlMapping) {
+    public void recordClick(String shortUrl) {
+        UrlMapping urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
+        if (urlMapping == null) return;
+
         urlMapping.setClickCount(urlMapping.getClickCount() + 1);
         urlMappingRepository.save(urlMapping);
 

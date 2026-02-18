@@ -1,6 +1,5 @@
 package io.github.mdtalim.gate.controller;
 
-import io.github.mdtalim.gate.models.UrlMapping;
 import io.github.mdtalim.gate.service.UrlMappingService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,12 +15,12 @@ public class RedirectController {
 
     @GetMapping("/{shortUrl}")
     public ResponseEntity<Void> redirect(@PathVariable String shortUrl) {
-        UrlMapping urlMapping = urlMappingService.getOriginalUrl(shortUrl);
+        String originalUrl = urlMappingService.resolveOriginalUrl(shortUrl);
 
-        urlMappingService.updateClickAnalytics(urlMapping);
+        urlMappingService.recordClick(shortUrl);
 
         return ResponseEntity.status(HttpStatus.FOUND)
-                .header("Location", urlMapping.getOriginalUrl())
+                .header("Location", originalUrl)
                 .build();
     }
 }
