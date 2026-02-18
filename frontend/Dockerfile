@@ -1,22 +1,27 @@
-FROM node:20-alpine AS development-dependencies-env
-COPY . /app
+# ---- Stage 1: Install all deps ----
+FROM oven/bun:1-alpine AS deps
 WORKDIR /app
-RUN npm ci
+COPY package.json bun.lock ./
+RUN bun install --fronzen-lockfile
 
-FROM node:20-alpine AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
+# ---- Stage 2: Build ----
+FROM oven/bun:1-alpine AS build
 WORKDIR /app
-RUN npm ci --omit=dev
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
-FROM node:20-alpine AS build-env
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
-RUN npm run build
+# Vite bakes env vars at build time, so we pass it here
+ARG VITE_BACKEND_API_URL=http://localhost:8080
+ENV VITE_BACKEND_API_URL=${VITE_BACKEND_API_URL}
 
+RUN bun run build
+
+# ---- Stage 3: Production ----
 FROM node:20-alpine
-COPY ./package.json package-lock.json /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
 WORKDIR /app
-CMD ["npm", "run", "start"]
+COPY package.json bun.lock ./
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/build ./build
+
+EXPOSE 3000
+CMD [ "npx", "react-router-serve", "./build/server/index.js" ]

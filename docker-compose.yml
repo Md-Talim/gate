@@ -4,10 +4,10 @@ services:
     container_name: gate_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: gate
-      MYSQL_USER: gate_user
-      MYSQL_PASSWORD: userpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-gate}
+      MYSQL_USER: ${MYSQL_USER:-gate_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-userpassword}
     ports:
       - "3306:3306"
     volumes:
@@ -16,11 +16,45 @@ services:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD-SHELL", "mysql -u root -prootpassword -e 'SELECT 1'"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysql -u root -p${MYSQL_ROOT_PASSWORD:-rootpassword} -e 'SELECT 1'",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  backend:
+    build: ./backend
+    container_name: gate_backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-gate}
+      DATABASE_USERNAME: ${MYSQL_USER:-gate_user}
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD:-userpassword}
+      JWT_SECRET: ${JWT_SECRET:-F1kGyQD9yhE3zBMTRXbSfpoVkiq3a5Y0U2OhLTnxzkX}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-172800000}
+      FRONTEND_URL: http://localhost:5173,http://localhost:3000
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_BACKEND_API_URL: http://localhost:8080
+    container_name: gate_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_BACKEND_API_URL: http://localhost:8080
+    depends_on:
+      - backend
+
 volumes:
   mysql_data:
-
