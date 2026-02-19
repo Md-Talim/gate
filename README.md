@@ -2,6 +2,10 @@
 
 A full-stack URL shortener built with **Spring Boot** and **React**, featuring in-memory caching for sub-millisecond redirects, sliding-window rate limiting, async click analytics, and JWT authentication — containerized for one-command startup.
 
+## Architecture
+
+![Architecture Diagram](docs/architecture.png)
+
 ## Key Engineering Decisions
 
 ### Caffeine Cache on the Redirect Hot Path
