@@ -60,6 +60,23 @@ export default function App() {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const handleDelete = async (urlMapping: UrlMapping) => {
+    const shortUrl = urlMapping.shortUrl;
+    if (!shortUrl.trim()) return;
+    setError("");
+
+    try {
+      await apiFetch<UrlMapping>(`/api/urls/${shortUrl}`, {
+        method: "DELETE",
+      });
+
+      // Remove deleted url from urls array
+      setUrls((prev) => prev.filter((u) => u.id !== urlMapping.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete URL");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans">
       {/* Header */}
@@ -148,6 +165,12 @@ export default function App() {
                       className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
                     >
                       {copied === url.id ? "Copied!" : "Copy"}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(url)}
+                      className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+                    >
+                      Delete
                     </button>
                   </div>
                 </li>

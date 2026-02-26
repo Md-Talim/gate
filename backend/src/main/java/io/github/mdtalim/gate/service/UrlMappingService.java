@@ -119,6 +119,21 @@ public class UrlMappingService {
         clickEventRepository.save(clickEvent);
     }
 
+    @Transactional
+    public void deleteUrlMappingByUser(String shortUrl, User user) {
+        UrlMapping urlMapping = urlMappingRepository.findByShortUrl(shortUrl);
+        if (urlMapping == null) {
+            throw new ResourceNotFoundException("Short URL not found: " + shortUrl);
+        }
+
+        if (!urlMapping.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You do not have permission to delete this URL");
+        }
+
+        urlCacheService.evict(shortUrl);
+        urlMappingRepository.delete(urlMapping);
+    }
+
     private String generateUniqueShortUrl() {
         for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
             String candidate = generateShortUrl();
